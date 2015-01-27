@@ -13,31 +13,51 @@ div {
 }
     </style>
 <script>
-var layout;
-var layoutPrev;
-function mycode() {
-	var winHeight = $(window).height(); 
+$(document).ready(function () {
+        var $body = $("body");
+        var layout;
+        var layoutPrev;
 
-    $.get("/current/", function(data) {
-        if( data != layoutPrev) {
-            layout = JSON.parse(data);
-            layoutPrev = data;
-            $("body").empty();
-            for (var i = 0; i < layout.RowCount; i++) {
-             for (var j = 0; j < layout.Colsizes[i]; j++) {
-              $("body").append("<div id=" + i + j + "><iframe id=r" + j + " src=" + layout.Rows[i][j] + " scrolling=no></iframe></div>");
-              var cW = ($(window).width() / layout.Colsizes[i]);
-              cW -= 18;
-                 $("div#"+i+j).width(cW);
-                 $("div").height(winHeight / layout.RowCount);
-                 $("iframe").height(winHeight / layout.RowCount);
-                }
-            }
+        var WIDTH_PADDING = 18;
+        var REFRESH_INTERVAL = 20000;
+
+        function refreshFrames() {
+                var winHeight = $(window).height(),
+                winWidth = $(window).width();
+
+                $.get("http://gala.dbever.me:3030/current/", function (data) {
+                        if (data != layoutPrev) {
+                                layout = JSON.parse(data);
+                                layoutPrev = data;
+                                $body.empty();
+
+                                var rH = winHeight / layout.RowCount
+
+                                for (var i= 0; i < layout.RowCount; i++) {
+                                        for (var j = 0; j < layout.Colsizes[i] j++) {
+                                                var cW = (winWidth /layout.Colsizes[i] - WIDTH_PADDING;
+                                                var $frameDiv = $("<div>");
+                                                var $frame = $("<iframe>", {
+                                                        "src": layout.Rows[i][j],
+                                                        "scrolling":"no"
+                                                });
+
+                                                $frameDiv.append($frame);
+
+                                                $frameDiv.width(cW).height(rH);;
+                                                $frame.height(rH);
+
+                                                $body.append($frameDiv);
+                                                $("body").append("<div id=" + i + j +"><iframe id=r" + j + "src=" + layout.Rows[i][j] + " scrolling=no></iframe></div>");
+                                                }
+                                                }
+                                                }
+                                                });
         }
-    });
 
-}
-var tid = setInterval(mycode, 20000);
+        var tid = setInterval(refreshFrames, REFRESH_INTERVAL);
+        refreshFrames();
+
 </script>
 </head>
 <body>
